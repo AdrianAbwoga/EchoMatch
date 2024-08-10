@@ -1,4 +1,2 @@
 /data/
 /__pycache__/
-/processed_features.pkl/
-/audio_cnn_model.h5/
