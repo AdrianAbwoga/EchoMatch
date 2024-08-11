@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.models import load_model
 import pickle
+from sklearn.preprocessing import LabelEncoder
 
 def load_new_sample_features(file_path):
     with open(file_path, 'rb') as f:
