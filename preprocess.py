@@ -13,7 +13,7 @@ GENRES = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', '
 def extract_features(file_name):
     try:
         audio, sample_rate = librosa.load(file_name, res_type='kaiser_fast')
-        mfccs = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
+        mfccs = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=128)
         mfccs_scaled = np.mean(mfccs.T, axis=0)
         return mfccs_scaled
     except Exception as e:

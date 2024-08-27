@@ -33,7 +33,7 @@ def upload_audio():
 
 def get_recommendations(song_label):
     # Dummy recommendations for demonstration
-    recommendations = ["Song A", "Song B", "Song C"]
+    recommendations = [f"{song_label} Song A", f"{song_label} Song B", f"{song_label} Song C"]
     return recommendations
 
 if __name__ == '__main__':

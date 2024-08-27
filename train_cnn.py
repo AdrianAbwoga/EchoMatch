@@ -25,7 +25,7 @@ X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], 1)
 
 # Build the CNN model
 model = Sequential()
-model.add(Conv1D(64, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
+model.add(Conv1D(64, kernel_size=3, activation='relu', input_shape=(128, 1)))  # Changed to 128
 model.add(MaxPooling1D(pool_size=2))
 model.add(Conv1D(128, kernel_size=3, activation='relu'))
 model.add(MaxPooling1D(pool_size=2))
