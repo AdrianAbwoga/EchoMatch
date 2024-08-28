@@ -49,5 +49,5 @@ def process_and_save_sample(file_path):
 
 if __name__ == "__main__":
     # Relative path to the audio file
-    audio_file_path = os.path.join('uploads', 'classical.00000.wav')
+    audio_file_path = os.path.join('uploads', 'rock.00000.wav')
     process_and_save_sample(audio_file_path)
