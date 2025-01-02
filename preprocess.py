@@ -2,6 +2,8 @@ import os
 import numpy as np
 import librosa
 import pandas as pd
+import pickle
+from sklearn.preprocessing import StandardScaler
 
 # Path to the dataset
 DATA_PATH = "data"
@@ -23,7 +25,9 @@ def extract_features(file_name):
 # Main function to preprocess the dataset
 def preprocess_data(data_path, genres):
     features = []
-    
+    all_song_features = {}
+    all_song_labels = {}
+
     for genre in genres:
         genre_path = os.path.join(data_path, genre)
         for file_name in os.listdir(genre_path):
@@ -31,13 +35,31 @@ def preprocess_data(data_path, genres):
                 file_path = os.path.join(genre_path, file_name)
                 data = extract_features(file_path)
                 if data is not None:
-                    features.append([data, genre])
-    
-    features_df = pd.DataFrame(features, columns=['feature', 'label'])
-    return features_df
+                    features.append(data)
+                    all_song_features[file_name] = data
+                    all_song_labels[file_name] = genre
 
-# Run the preprocessing
+    return features, all_song_features, all_song_labels
+
 if __name__ == "__main__":
-    features_df = preprocess_data(DATA_PATH, GENRES)
-    features_df.to_pickle('processed_features.pkl')
-    print('Preprocessing completed. Processed data saved to processed_features.pkl')
+    # Extract features and labels
+    raw_features, all_song_features, all_song_labels = preprocess_data(DATA_PATH, GENRES)
+
+    # Normalize features
+    scaler = StandardScaler()
+    normalized_features = scaler.fit_transform(raw_features)
+
+    # Save normalized features for all songs
+    with open('all_song_features.pkl', 'wb') as f:
+        pickle.dump(all_song_features, f)
+    print("Normalized song features saved to all_song_features.pkl")
+
+    # Save labels for all songs
+    with open('all_song_labels.pkl', 'wb') as f:
+        pickle.dump(all_song_labels, f)
+    print("Song labels saved to all_song_labels.pkl")
+
+    # Save the scaler for runtime normalization
+    with open('scaler.pkl', 'wb') as f:
+        pickle.dump(scaler, f)
+    print("Scaler saved to scaler.pkl")

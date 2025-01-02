@@ -3,19 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Recorder</title>
+    <title>EchoMatch</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <h1>Record an Audio Sample</h1>
-    <button id="recordButton">Start Recording</button>
-    <button id="stopButton" disabled>Stop Recording</button>
-    <h2 id="result"></h2>
-    <h3 id="recommendations"></h3>
+    <header>
+        <h1>EchoMatch: Music Genre Recommendation</h1>
+    </header>
+
+    <main>
+        <h2>Record or Upload an Audio Sample</h2>
+
+        <!-- Audio Recording Interface -->
+        <button id="recordButton">Start Recording</button>
+        <button id="stopButton" disabled>Stop Recording</button>
+        
+        <h3>OR</h3>
+
+        <!-- Audio File Upload -->
+        <input type="file" id="audioFileInput" accept="audio/*" style="display: none;" />
+        <button id="uploadButton">Upload Audio File</button>
+
+        <h3 id="result"></h3> <!-- This is for the prediction result -->
+
+        <!-- Recommendations Table -->
+        <table id="recommendationsTable" style="width: 80%; margin: 20px auto; border-collapse: collapse; display: none;">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Recommended Song</th>
+                </tr>
+            </thead>
+            <tbody id="recommendationsBody"></tbody>
+        </table>
+
+        <!-- Genre Similarity Plot -->
+        <h3>Genre Similarity Chart</h3>
+        <img id="genreSimilarityPlot" src="" alt="Genre Similarity Plot" style="width: 80%; margin: 20px auto; display: none;">
+
+    </main>
 
     <script>
         let mediaRecorder;
         let audioChunks = [];
 
+        // Record Button Functionality
         document.getElementById('recordButton').onclick = async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream);
@@ -23,7 +56,7 @@
             mediaRecorder.ondataavailable = event => {
                 audioChunks.push(event.data);
             };
-            
+
             mediaRecorder.onstop = async () => {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                 const formData = new FormData();
@@ -35,8 +68,13 @@
                 });
 
                 const result = await response.json();
-                document.getElementById('result').innerText = `Identified Song: ${result.song}`;
-                document.getElementById('recommendations').innerText = `Recommendations: ${result.recommendations.join(', ')}`;
+                document.getElementById('result').innerText = `Prediction: ${result.song}`;
+                displayRecommendations(result.recommendations);
+
+                // Display the genre similarity plot
+                const plotImage = document.getElementById('genreSimilarityPlot');
+                plotImage.src = result.plot;  // Update the plot image
+                plotImage.style.display = 'block';  // Make the plot visible
             };
 
             mediaRecorder.start();
@@ -44,12 +82,62 @@
             document.getElementById('stopButton').disabled = false;
         };
 
+        // Stop Recording
         document.getElementById('stopButton').onclick = () => {
             mediaRecorder.stop();
             document.getElementById('recordButton').disabled = false;
             document.getElementById('stopButton').disabled = true;
             audioChunks = [];
         };
+
+        // Upload Audio File Functionality
+        document.getElementById('uploadButton').onclick = () => {
+            document.getElementById('audioFileInput').click();
+        };
+
+        document.getElementById('audioFileInput').onchange = async (event) => {
+            const file = event.target.files[0];
+            const formData = new FormData();
+            formData.append('audio', file);
+
+            const response = await fetch('/upload_audio', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            document.getElementById('result').innerText = `Prediction: ${result.song}`;
+            displayRecommendations(result.recommendations);
+
+            // Display the genre similarity plot
+            const plotImage = document.getElementById('genreSimilarityPlot');
+            plotImage.src = result.plot;  // Update the plot image
+            plotImage.style.display = 'block';  // Make the plot visible
+        };
+
+        // Display Recommendations in a Table
+        function displayRecommendations(recommendations) {
+            const recommendationsTable = document.getElementById('recommendationsTable');
+            const recommendationsBody = document.getElementById('recommendationsBody');
+            
+            // Clear any previous recommendations
+            recommendationsBody.innerHTML = '';
+            
+            // Create rows for each recommendation
+            recommendations.forEach((song, index) => {
+                const row = document.createElement('tr');
+                const indexCell = document.createElement('td');
+                const songCell = document.createElement('td');
+                indexCell.textContent = index + 1;
+                songCell.textContent = song;
+                row.appendChild(indexCell);
+                row.appendChild(songCell);
+                recommendationsBody.appendChild(row);
+            });
+
+            // Show the table
+            recommendationsTable.style.display = 'table';
+        }
     </script>
 </body>
 </html>

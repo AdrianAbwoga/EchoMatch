@@ -11,7 +11,7 @@ encoder = pickle.load(open('encoder.pkl', 'rb'))
 def extract_features(file_path):
     try:
         y, sr = librosa.load(file_path, sr=None)
-        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
+        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=128)
         features = np.mean(mfccs.T, axis=0)
         print(f"Extracted features: {features}")  # Debug statement
         return features
@@ -44,10 +44,24 @@ def process_and_save_sample(file_path):
         
         label = encoder.inverse_transform([np.argmax(prediction)])
         print(f"Predicted label: {label[0]}")
+
+        return label[0]
     else:
         print("Failed to extract features.")
 
 if __name__ == "__main__":
-    # Relative path to the audio file
-    audio_file_path = os.path.join('uploads', 'rock.00000.wav')
-    process_and_save_sample(audio_file_path)
+    uploads_folder = 'uploads'
+    
+    if not os.path.exists(uploads_folder):
+        print(f"The folder '{uploads_folder}' does not exist.")
+        exit()
+
+    audio_files = [f for f in os.listdir(uploads_folder) if f.endswith('.wav')]
+    
+    if not audio_files:
+        print("No audio files found in the 'uploads' folder.")
+    else:
+        for audio_file in audio_files:
+            file_path = os.path.join(uploads_folder, audio_file)
+            print(f"Processing file: {audio_file}")
+            process_and_save_sample(file_path)
